@@ -44,7 +44,7 @@ with models.DAG(
             "datasets/heart.csv",
             "-o",
             "models/heart_model.pkl",
-            "--s3_bucket",
+            "--s3-bucket",
             "demo-cicd-made",
         ],
         secrets=[secret_aws_key_id, secret_aws_access_key],
