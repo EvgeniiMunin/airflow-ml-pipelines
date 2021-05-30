@@ -38,6 +38,7 @@ with models.DAG(
     train_model = KubernetesPodOperator(
         task_id="train-heart-ml-model",
         name="train-heart-ml-model",
+        cmds=["python", "train.py"],
         arguments=[
             "-d",
             "datasets/heart.csv",
