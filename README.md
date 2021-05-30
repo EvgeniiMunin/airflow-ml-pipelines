@@ -1,2 +1,4 @@
 # airflow-ml-pipelines
-Демонстрационные репозитории для пары CICD для ML в MADE
+
+main -- даги для среды prod
+stage -- даги для среда stage
