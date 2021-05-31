@@ -4,6 +4,7 @@ from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
 from airflow.utils.dates import days_ago
+from airflow.models.variable import Variable
 
 with models.DAG(
     "example_train_model",
@@ -48,7 +49,7 @@ with models.DAG(
             "demo-cicd-made",
         ],
         secrets=[secret_aws_key_id, secret_aws_access_key],
-        namespace="airflow-stage",
+        namespace=Variable.get("namespace"),
         service_account_name="airflow-scheduler",
         image="mikhailmar/training-job:1.0.2",
     )
