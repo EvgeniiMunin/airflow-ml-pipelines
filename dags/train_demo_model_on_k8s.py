@@ -44,7 +44,7 @@ with models.DAG(
             "-d",
             "datasets/heart.csv",
             "-o",
-            "models/heart_model.pkl",
+            "models/heart_model_1.pkl",
             "--s3-bucket",
             "demo-cicd-made",
         ],
