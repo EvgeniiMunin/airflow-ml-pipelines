@@ -3,8 +3,9 @@ from airflow.kubernetes.secret import Secret
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
-from airflow.utils.dates import days_ago
 from airflow.models.variable import Variable
+from airflow.utils.dates import days_ago
+from kubernetes.client import V1EnvVar
 
 with models.DAG(
     "example_train_model",
@@ -12,28 +13,14 @@ with models.DAG(
     start_date=days_ago(1),
     tags=["example"],
 ) as dag:
-    secret_aws_key_id = Secret(
-        # Expose the secret as environment variable.
-        deploy_type="env",
-        # The name of the environment variable, since deploy_type is `env` rather
-        # than `volume`.
-        deploy_target="AWS_ACCESS_KEY_ID",
-        # Name of the Kubernetes Secret
-        secret="aws-s3-secret",
-        # Key of a secret stored in this Secret object
-        key="AWS_ACCESS_KEY_ID",
-    )
-
-    secret_aws_access_key = Secret(
-        # Expose the secret as environment variable.
-        deploy_type="env",
-        # The name of the environment variable, since deploy_type is `env` rather
-        # than `volume`.
-        deploy_target="AWS_SECRET_ACCESS_KEY",
-        # Name of the Kubernetes Secret
-        secret="aws-s3-secret",
-        # Key of a secret stored in this Secret object
-        key="AWS_SECRET_ACCESS_KEY",
+    secret_volume = Secret(
+        deploy_type='volume',
+        # Path where we mount the secret as volume
+        deploy_target='/var/secrets/google',
+        # Name of Kubernetes Secret
+        secret='service-account',
+        # Key in the form of service account file name
+        key='service-account.json'
     )
 
     train_model = KubernetesPodOperator(
@@ -46,10 +33,13 @@ with models.DAG(
             "-o",
             "models/heart_model_1.pkl",
             "--s3-bucket",
-            "demo-cicd-made",
+            "test-cluster-stage-bucket",
         ],
-        secrets=[secret_aws_key_id, secret_aws_access_key],
+        secrets=[secret_volume],
+        env_vars=[
+            V1EnvVar('GOOGLE_APPLICATION_CREDENTIALS', '/var/secrets/google/service-account.json')
+        ],
         namespace=Variable.get("namespace"),
         service_account_name="airflow-scheduler",
-        image="mikhailmar/training-job:1.0.3",
+        image="mikhailmar/training-job:pr-3",
     )
