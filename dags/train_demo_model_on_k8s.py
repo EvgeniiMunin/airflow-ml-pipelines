@@ -33,7 +33,7 @@ with models.DAG(
             "-o",
             "models/heart_model_1.pkl",
             "--s3-bucket",
-            "test-cluster-stage-bucket",
+            "{{ var.value.bucket_name }}",
         ],
         secrets=[secret_volume],
         env_vars=[
