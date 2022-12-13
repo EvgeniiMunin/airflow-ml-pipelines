@@ -53,5 +53,5 @@ with models.DAG(
         secrets=[secret_aws_key_id, secret_aws_access_key],
         namespace=Variable.get("namespace"),
         service_account_name="airflow-scheduler",
-        image="mikhailmar/training-job:pr-3",
+        image="mikhailmar/training-job:1.0.3",
     )
