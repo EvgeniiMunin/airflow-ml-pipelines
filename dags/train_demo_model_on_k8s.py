@@ -13,7 +13,7 @@ with models.DAG(
     start_date=days_ago(1),
     tags=["tags"],
 ) as dag:
-       secret_aws_key_id = Secret(
+    secret_aws_key_id = Secret(
         # Expose the secret as environment variable.
         deploy_type="env",
         # The name of the environment variable, since deploy_type is `env` rather
