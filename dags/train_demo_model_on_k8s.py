@@ -13,15 +13,30 @@ with models.DAG(
     start_date=days_ago(1),
     tags=["tags"],
 ) as dag:
-    secret_volume = Secret(
-        deploy_type='volume',
-        # Path where we mount the secret as volume
-        deploy_target='/var/secrets/google',
-        # Name of Kubernetes Secret
-        secret='service-account',
-        # Key in the form of service account file name
-        key='service-account.json'
+       secret_aws_key_id = Secret(
+        # Expose the secret as environment variable.
+        deploy_type="env",
+        # The name of the environment variable, since deploy_type is `env` rather
+        # than `volume`.
+        deploy_target="AWS_ACCESS_KEY_ID",
+        # Name of the Kubernetes Secret
+        secret="aws-s3-secret",
+        # Key of a secret stored in this Secret object
+        key="AWS_ACCESS_KEY_ID",
     )
+
+    secret_aws_access_key = Secret(
+        # Expose the secret as environment variable.
+        deploy_type="env",
+        # The name of the environment variable, since deploy_type is `env` rather
+        # than `volume`.
+        deploy_target="AWS_SECRET_ACCESS_KEY",
+        # Name of the Kubernetes Secret
+        secret="aws-s3-secret",
+        # Key of a secret stored in this Secret object
+        key="AWS_SECRET_ACCESS_KEY",
+    )
+
 
     train_model = KubernetesPodOperator(
         task_id="train-heart-ml-model",
@@ -35,10 +50,7 @@ with models.DAG(
             "--s3-bucket",
             "{{ var.value.bucket_name }}",
         ],
-        secrets=[secret_volume],
-        env_vars=[
-            V1EnvVar('GOOGLE_APPLICATION_CREDENTIALS', '/var/secrets/google/service-account.json')
-        ],
+        secrets=[secret_aws_key_id, secret_aws_access_key],
         namespace=Variable.get("namespace"),
         service_account_name="airflow-scheduler",
         image="mikhailmar/training-job:pr-3",
