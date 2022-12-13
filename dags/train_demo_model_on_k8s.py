@@ -11,7 +11,7 @@ with models.DAG(
     "example_train_model",
     schedule_interval=None,  # Override to match your needs
     start_date=days_ago(1),
-    tags=["example"],
+    tags=["tags"],
 ) as dag:
     secret_volume = Secret(
         deploy_type='volume',
