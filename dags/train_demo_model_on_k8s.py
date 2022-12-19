@@ -3,6 +3,7 @@ from airflow.kubernetes.secret import Secret
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import (
     KubernetesPodOperator,
 )
+from airflow.operators.bash import BashOperator
 from airflow.models.variable import Variable
 from airflow.utils.dates import days_ago
 from kubernetes.client import V1EnvVar
@@ -55,3 +56,10 @@ with models.DAG(
         service_account_name="airflow-scheduler",
         image="mikhailmar/training-job:pr-4",
     )
+    
+    t2 = BashOperator(
+        task_id="sleep", bash_command="sleep 5",
+    )
+    
+    train_model >> t2
+
