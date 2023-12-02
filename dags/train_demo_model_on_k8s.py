@@ -38,6 +38,8 @@ with models.DAG(
         key="AWS_SECRET_ACCESS_KEY",
     )
 
+    print("secret_aws_key_id: ", secret_aws_key_id)
+    print("secret_aws_access_key: ", secret_aws_access_key)
 
     train_model = KubernetesPodOperator(
         task_id="train-heart-ml-model",
