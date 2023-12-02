@@ -45,16 +45,16 @@ with models.DAG(
         cmds=["python", "train.py"],
         arguments=[
             "-d",
-            "datasets/heart.csv",
+            "datasets/data.csv", #"datasets/heart.csv",
             "-o",
-            "models/heart_model_1.pkl",
+            "models/model.csv", #"models/heart_model.pkl", #"models/heart_model_1.pkl",
             "--s3-bucket",
-            "{{ var.value.bucket_name }}",
+            "made-sem7-demo-cicd", #"{{ var.value.bucket_name }}",
         ],
         secrets=[secret_aws_key_id, secret_aws_access_key],
-        namespace=Variable.get("namespace"),
+        namespace="airflow-prod", #Variable.get("namespace"),
         service_account_name="airflow-scheduler",
-        image="mikhailmar/training-job:pr-4",
+        image="evgeniimunin/training-job:main",
     )
     
     t2 = BashOperator(
