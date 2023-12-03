@@ -8,6 +8,10 @@ from airflow.models.variable import Variable
 from airflow.utils.dates import days_ago
 from kubernetes.client import V1EnvVar
 
+"""
+single stage DAG
+"""
+
 with models.DAG(
     "example_train_model",
     schedule_interval=None,  # Override to match your needs
@@ -38,9 +42,24 @@ with models.DAG(
         key="AWS_SECRET_ACCESS_KEY",
     )
 
-    print("secret_aws_key_id: ", secret_aws_key_id)
-    print("secret_aws_access_key: ", secret_aws_access_key)
-
+    """
+    task kubernetesPodOperator
+        task_id
+        name = pdo name
+        image = "evgeniimunin/training-job:main",
+            run in this docker img
+            provide arguments
+                dataset on current date
+        secrets=[secret_aws_key_id, secret_aws_access_key],
+            AWS secrets to access S3
+            job should load and upload to S3
+            have secrets in kube cluster
+                they are taken from env vars
+    similar to docker operator
+    but starts the code in kubernetes
+        it is like we define manifest
+        we provide resources 
+    """
     train_model = KubernetesPodOperator(
         task_id="train-heart-ml-model",
         name="train-heart-ml-model",
