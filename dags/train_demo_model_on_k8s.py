@@ -13,19 +13,33 @@ single stage DAG
 """
 
 with models.DAG(
-    "example_train_model",
-    schedule_interval=None,  # Override to match your needs
-    start_date=days_ago(1),
-    tags=["example"],
+        "example_train_model",
+        schedule_interval=None,  # Override to match your needs
+        start_date=days_ago(1),
+        tags=["tags"],
 ) as dag:
-    secret_volume = Secret(
-        deploy_type='volume',
-        # Path where we mount the secret as volume
-        deploy_target='/var/secrets/google',
-        # Name of Kubernetes Secret
-        secret='service-account',
-        # Key in the form of service account file name
-        key='service-account.json'
+    secret_aws_key_id = Secret(
+        # Expose the secret as environment variable.
+        deploy_type="env",
+        # The name of the environment variable, since deploy_type is `env` rather
+        # than `volume`.
+        deploy_target="AWS_ACCESS_KEY_ID",
+        # Name of the Kubernetes Secret
+        secret="aws-s3-secret",
+        # Key of a secret stored in this Secret object
+        key="AWS_ACCESS_KEY_ID",
+    )
+
+    secret_aws_access_key = Secret(
+        # Expose the secret as environment variable.
+        deploy_type="env",
+        # The name of the environment variable, since deploy_type is `env` rather
+        # than `volume`.
+        deploy_target="AWS_SECRET_ACCESS_KEY",
+        # Name of the Kubernetes Secret
+        secret="aws-s3-secret",
+        # Key of a secret stored in this Secret object
+        key="AWS_SECRET_ACCESS_KEY",
     )
 
     train_model = KubernetesPodOperator(
@@ -34,26 +48,22 @@ with models.DAG(
         cmds=["python", "train.py"],
         arguments=[
             "-d",
-            "datasets/data.csv", #"datasets/heart.csv",
+            "datasets/data.csv",  # "datasets/heart.csv",
             "-o",
-            "models/model.csv", #"models/heart_model.pkl", #"models/heart_model_1.pkl",
+            "models/model.csv",  # "models/heart_model.pkl", #"models/heart_model_1.pkl",
             "--s3-bucket",
-            "{{ var.value.bucket_name }}",
+            "made-sem7-demo-cicd",  # "{{ var.value.bucket_name }}",
             "--endpoint-url",
             "https://s3.us-east-1.amazonaws.com",
         ],
-        secrets=[secret_volume],
-        env_vars=[
-            V1EnvVar('GOOGLE_APPLICATION_CREDENTIALS', '/var/secrets/google/service-account.json')
-        ],
-        namespace="airflow-stage", #Variable.get("namespace"),
+        secrets=[secret_aws_key_id, secret_aws_access_key],
+        namespace="airflow-stage",  # Variable.get("namespace"),
         service_account_name="airflow-scheduler",
         image="evgeniimunin/training-job:main",
     )
-    
+
     t2 = BashOperator(
         task_id="sleep", bash_command="sleep 5",
     )
-    
-    train_model >> t2
 
+    train_model >> t2
