@@ -53,8 +53,8 @@ with models.DAG(
             "models/model.csv", #"models/heart_model.pkl", #"models/heart_model_1.pkl",
             "--s3-bucket",
             "made-sem7-demo-cicd", #"{{ var.value.bucket_name }}",
-            "--aws_access_key_id",
-            f"{secret_aws_key_id.secret}"
+            "--endpoint-url",
+            "https://s3.us-east-1.amazonaws.com",
         ],
         secrets=[secret_aws_key_id, secret_aws_access_key],
         namespace="airflow-prod", #Variable.get("namespace"),
