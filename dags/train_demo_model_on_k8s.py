@@ -42,24 +42,9 @@ with models.DAG(
         key="AWS_SECRET_ACCESS_KEY",
     )
 
-    """
-    task kubernetesPodOperator
-        task_id
-        name = pdo name
-        image = "evgeniimunin/training-job:main",
-            run in this docker img
-            provide arguments
-                dataset on current date
-        secrets=[secret_aws_key_id, secret_aws_access_key],
-            AWS secrets to access S3
-            job should load and upload to S3
-            have secrets in kube cluster
-                they are taken from env vars
-    similar to docker operator
-    but starts the code in kubernetes
-        it is like we define manifest
-        we provide resources 
-    """
+    secret_aws_key_id.secret
+    secret_aws_key_id.key
+
     train_model = KubernetesPodOperator(
         task_id="train-heart-ml-model",
         name="train-heart-ml-model",
@@ -71,6 +56,8 @@ with models.DAG(
             "models/model.csv", #"models/heart_model.pkl", #"models/heart_model_1.pkl",
             "--s3-bucket",
             "made-sem7-demo-cicd", #"{{ var.value.bucket_name }}",
+            "--aws_access_key_id",
+            f"{secret_aws_key_id.secret}"
         ],
         secrets=[secret_aws_key_id, secret_aws_access_key],
         namespace="airflow-prod", #Variable.get("namespace"),
