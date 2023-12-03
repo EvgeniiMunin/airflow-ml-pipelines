@@ -55,5 +55,5 @@ with models.DAG(
         task_id="sleep", bash_command="sleep 5",
     )
     
-    # train_model >> t2
+    train_model >> t2
 
